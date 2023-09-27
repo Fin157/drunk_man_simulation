@@ -1,3 +1,5 @@
+from enum import Enum
+
 def clamp(value: float, minimum: float, maximum: float) -> float:
     """
     Clamps the value between the minimum and maximum.
@@ -17,3 +19,9 @@ def clamp(value: float, minimum: float, maximum: float) -> float:
     """
 
     return max(minimum, min(value, maximum))
+
+class Ending(Enum):
+    Home = 0
+    Pub = 1
+    Asleep = 2
+    Walking = 3
