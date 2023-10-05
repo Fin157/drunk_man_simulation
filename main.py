@@ -1,51 +1,103 @@
-from helpers import *
-import random
+from io import TextIOWrapper
+from drunk_man import go_home
 
-def go_home(home_pub_distance, max_steps, step_size):
-    pub_pos = home_pub_distance - 1
-    pos = get_starting_pos(pub_pos)
-    steps = 0
-    result = is_end(pos, pub_pos, steps, max_steps)
+input_file_path = 'C:\\Users\\444St\\OneDrive\\Plocha\\test_input.txt'
+output_file_path = 'C:\\Users\\444St\\OneDrive\\Plocha\\test_output.txt'
 
-    while result == Ending.Walking:
-        pos = take_step(pos, step_size, pub_pos)
-        render(pos, pub_pos)
-        result = is_end(pos, pub_pos, steps, max_steps)
-        steps += 1
+def simulate() -> None:
+    '''
+    This is the master function of the system. It gathers everything needed
+    for the simulation to run and then runs it multiple times to see what
+    the most frequent result of the current setup is.
 
-    render_end(result)
+    The input values are taken from a file and the outputs are written into
+    another one.
+    '''
 
-def take_step(pos, step_size, pub_pos) -> int:
-    return random.choice((clamp(pos - step_size, 0, pos),
-                        clamp(pos + step_size, pos, pub_pos)))
+    # Take the input and output file paths from the user
+    # input_file_path = input('Input file path: ')
+    # output_file_path = input('Output file path: ')
 
-def get_starting_pos(pub_pos):
-    return round(pub_pos / 2)
+    # Construct the input dictionary from the input file
+    inputs = get_input(input_file_path)
+    results = dict()
 
-def is_end(pos, pub_pos, steps, max_steps) -> Ending:
-    if pos == 0:
-        return Ending.Home
-    elif pos == pub_pos:
-        return Ending.Pub
-    elif steps >= max_steps:
-        return Ending.Asleep
-    return Ending.Walking
+    for _ in range(inputs['sim_count']):
+        result = go_home(inputs['home_pub_dist'], inputs['max_steps'], inputs['step_size'], inputs['verbose'])
+        # Increase the corresponding result's value
+        if not results.__contains__(result.name):
+            results[result.name] = 0
+        results[result.name] += 1
 
-def render(pos, pub_pos):
-    line = ["."] * (pub_pos + 1)
-    line[0] = "home"
-    line[pos] = "*"
-    line[pub_pos] = "pub"
-    print(*line)
+    write_output(output_file_path, inputs, results)
 
-def render_end(result):
-    if result == Ending.Walking:
-        return
-    elif result == Ending.Asleep:
-        print("Oh no! The drunk man fell asleep right on the pavement!")
-    elif result == Ending.Home:
-        print("Luckily, the drunk man was able to get home safely.")
-    elif result == Ending.Pub:
-        print("Sheesh! The drunk man ended in the pub again!")
+def get_input(path: str) -> dict:
+    '''
+    Constructs a dictionary of inputs for the simulation from the specified file.
 
-go_home(20, 20, 2)
+    Returns
+    -------
+    The newly obtained inputs.
+    '''
+
+    # Read everything in the specified file
+    lines = open(path).readlines()
+
+    # Make sure the file has 5 lines (1 input on each line)
+    if not len(lines) == 5:
+        raise Exception('Invalid input file.')
+
+    # Map the input values from the file to their target type and save them
+    # into a dictionary so that they can be accessed through names
+    return dict(
+        sim_count = int(lines[0]),
+        home_pub_dist = int(lines[1]),
+        max_steps = int(lines[2]),
+        step_size = int(lines[3]),
+        verbose = bool(int(lines[4]))
+    )
+
+def write_output(path: str, inputs: dict, results: dict) -> None:
+    '''
+    Writes a complete simulation output into the specified file.
+
+    Writes a header for the whole file, then adds information about the inputs
+    used in this simulation and also the results and how many times each of
+    them happened.
+    '''
+
+    # Open the file
+    output_file = open(path, 'w')
+
+    # Write the file header
+    output_file.write('Drunk man simulation summary\n----------------------------')
+
+    output_file.write('Inputs\n')
+    for key in inputs.keys():
+        output_file.write(f'{key}: {inputs[key]}\n')
+    
+    output_file.write('Results\n')
+    for key in results.keys():
+        output_file.write(f'{key}: {results[key]} ({100 * results[key] / inputs["sim_count"]}%)\n')
+
+    # Close the file
+    output_file.close()
+
+def write_dictionary(file: TextIOWrapper, header: str, d: dict) -> None:
+    '''
+    Writes a dictionary of data into the specified file in key: value format
+    and with an arbitrary header preceding all data.
+    '''
+
+    # Make sure we avoid any errors caused by the file not being in the correct format
+    if not file.writable():
+        raise Exception('The specified file cannot be written into.')
+
+    # Write the header
+    file.write(header + '\n')
+
+    # Write the dictionary itself
+    for key in d.keys():
+        file.write(f'{key}: {d[key]}\n')
+
+simulate()

@@ -1,7 +1,7 @@
 from enum import Enum
 
 def clamp(value: float, minimum: float, maximum: float) -> float:
-    """
+    '''
     Clamps the value between the minimum and maximum.
 
     Parameters
@@ -16,11 +16,13 @@ def clamp(value: float, minimum: float, maximum: float) -> float:
     Returns
     -------
     float -> Value clamped inside the interval of minimum and maximum.
-    """
+    '''
 
     return max(minimum, min(value, maximum))
 
 class Ending(Enum):
+    '''An enum that determines in which state the drunk man is
+    at any given point in time.'''
     Home = 0
     Pub = 1
     Asleep = 2
