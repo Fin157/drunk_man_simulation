@@ -1,8 +1,9 @@
 from io import TextIOWrapper
 from drunk_man import go_home
 
-input_file_path = 'C:\\Users\\444St\\OneDrive\\Plocha\\test_input.txt'
-output_file_path = 'C:\\Users\\444St\\OneDrive\\Plocha\\test_output.txt'
+# Change these paths to your desired values
+input_file_path = r'C:\Test\test_input.txt'
+output_file_path = r'C:\Test\test_output.txt'
 
 def simulate() -> None:
     '''
@@ -13,10 +14,6 @@ def simulate() -> None:
     The input values are taken from a file and the outputs are written into
     another one.
     '''
-
-    # Take the input and output file paths from the user
-    # input_file_path = input('Input file path: ')
-    # output_file_path = input('Output file path: ')
 
     # Construct the input dictionary from the input file
     inputs = get_input(input_file_path)
@@ -49,13 +46,21 @@ def get_input(path: str) -> dict:
 
     # Map the input values from the file to their target type and save them
     # into a dictionary so that they can be accessed through names
-    return dict(
+
+    inputs = dict(
         sim_count = int(lines[0]),
         home_pub_dist = int(lines[1]),
         max_steps = int(lines[2]),
         step_size = int(lines[3]),
         verbose = bool(int(lines[4]))
     )
+
+    # Validate the inputs - each of them must be non-negative
+    for input in inputs.values():
+        if input < 0:
+            raise Exception('Input values cannot be negative.')
+
+    return inputs
 
 def write_output(path: str, inputs: dict, results: dict) -> None:
     '''
